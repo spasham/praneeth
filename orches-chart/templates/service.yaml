@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-orchestrator-service
+  namespace: sse-ai
+  labels:
+    env: dev
+    app: ai-orchestrator
+    app.kubernetes.io/instance: ai-orchestrator
+    app.kubernetes.io/name: ai-orchestrator
+    app.kubernetes.io/version: 1.16.0
+    project: datascience
+    user: ci
+spec:
+  selector:
+    env: dev
+    app: ai-orchestrator
+    app.kubernetes.io/instance: ai-orchestrator
+    app.kubernetes.io/name: ai-orchestrator
+    project: datascience
+    user: ci
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+  type: {{ .Values.service.type }}

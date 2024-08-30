@@ -1,0 +1,26 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ai-orchestrator-role
+  namespace: sse-ai
+  labels:
+    app: ai-orchestrator
+    app.kubernetes.io/instance: ai-orchestrator
+    app.kubernetes.io/name: ai-orchestrator
+    app.kubernetes.io/version: 1.16.0
+    env: dev
+    project: datascience
+    user: ci
+rules:
+- apiGroups: [""]
+  resources: 
+  - pods
+  verbs: 
+  - get
+  - list
+- apiGroups: ["apps"]
+  resources: 
+  - deployments
+  verbs: 
+  - get
+  - list

@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations:
+  labels:
+    app: ai-orchestrator
+    app.kubernetes.io/instance: ai-orchestrator
+    app.kubernetes.io/name: ai-orchestrator
+    app.kubernetes.io/version: 1.16.0
+    env: dev
+    project: datascience
+    user: ci
+  name: ai-orchestrator-role-binding
+  namespace: sse-ai
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ai-orchestrator-role
+subjects:
+- kind: ServiceAccount
+  name: pat-service-account
+  namespace: sse-ai

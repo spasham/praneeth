@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-orchestrator-network-policy
+  namespace: sse-ai
+  labels:
+    app: ai-orchestrator
+    app.kubernetes.io/instance: ai-orchestrator
+    app.kubernetes.io/name: ai-orchestrator
+    app.kubernetes.io/version: 1.16.0
+    env: dev
+    project: datascience
+    user: ci
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-orchestrator
+      app.kubernetes.io/instance: ai-orchestrator
+      app.kubernetes.io/name: ai-orchestrator
+      env: dev
+      project: datascience
+      user: ci
+  ingress:
+  - {}
+  egress:
+  - {}
+  policyTypes:
+  - Ingress
+  - Egress

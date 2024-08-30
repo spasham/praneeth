@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-orchestrator
+  namespace: sse-ai
+  labels:
+    admission.datadoghq.com/enabled: 'true'
+    app: ai-orchestrator
+    app.kubernetes.io/instance: ai-orchestrator
+    app.kubernetes.io/name: ai-orchestrator
+    app.kubernetes.io/version: 1.16.0
+    env: dev
+    project: datascience
+    tags.datadoghq.com/env: dev
+    tags.datadoghq.com/service: ai-orchestrator
+    tags.datadoghq.com/version: '0.10'
+    user: ci
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: ai-orchestrator
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ai-orchestrator
+        app.kubernetes.io/instance: ai-orchestrator
+        app.kubernetes.io/name: ai-orchestrator
+        env: dev
+        project: datascience
+        user: ci
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+      serviceAccountName: pat-service-account
+      automountServiceAccountToken: true
+      containers:
+        - name: ai-orchestrator
+          image: {{ .Values.image.name }}
+          imagePullPolicy: Always  # Example of specifying image pull policy
+          securityContext:
+            allowPrivilegeEscalation: false
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.httpGet.path }}
+              port: {{ .Values.readinessProbe.httpGet.port }}
+              scheme: {{ .Values.readinessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.httpGet.path }}
+              port: {{ .Values.livenessProbe.httpGet.port }}
+              scheme: {{ .Values.livenessProbe.httpGet.scheme }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          env:
+            - name: SSE_ENV
+              value: prod
+            - name: GUNICORN_WORKERS
+              value: "2"
+            - name: TOKEN_VALIDATION_ENABLED
+              value: "False"
+            - name: DD_AGENT_HOST
+              value: "datadog.datadog"
+            - name: DD_PROFILING_ENABLED
+              value: "True"
+            - name: DD_TRACE_ENABLED
+              value: "True"
+            - name: DD_LOGS_INJECTION
+              value: "True"
+            - name: DD_TRACE_SAMPLE_RATE
+              value: "1"
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+status: {}
