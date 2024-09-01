@@ -4,13 +4,7 @@ metadata:
   name: ai-orchestrator-network-policy
   namespace: sse-ai
   labels:
-    app: ai-orchestrator
-    app.kubernetes.io/instance: ai-orchestrator
-    app.kubernetes.io/name: ai-orchestrator
-    app.kubernetes.io/version: 1.16.0
-    env: dev
-    project: datascience
-    user: ci
+  {{- include "ai-orch.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
