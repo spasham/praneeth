@@ -4,13 +4,7 @@ metadata:
   name: ai-orchestrator-service
   namespace: sse-ai
   labels:
-    env: dev
-    app: ai-orchestrator
-    app.kubernetes.io/instance: ai-orchestrator
-    app.kubernetes.io/name: ai-orchestrator
-    app.kubernetes.io/version: 1.16.0
-    project: datascience
-    user: ci
+  {{- include "ai-orch.labels" . | nindent 8 }}
 spec:
   selector:
     env: dev
@@ -19,8 +13,9 @@ spec:
     app.kubernetes.io/name: ai-orchestrator
     project: datascience
     user: ci
+  type: {{ .Values.service.type }}  
   ports:
-    - protocol: TCP
+    - protocol: {{ .Values.service.protocol}}
       port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.targetPort }}
-  type: {{ .Values.service.type }}
+  

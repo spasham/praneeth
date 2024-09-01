@@ -4,53 +4,23 @@ metadata:
   name: ai-orchestrator-ingress
   namespace: sse-ai
   labels:
-    app: ai-orchestrator
-    app.kubernetes.io/instance: orchestrator
-    app.kubernetes.io/name: orchestrator
-    app.kubernetes.io/version: 1.16.0
-    env: dev
-    project: datascience
-    user: ci
+  {{- include "ai-orch.labels" . | nindent 4 }}
   annotations:
-    # Annotations specific to AWS ALB Ingress Controller
-    alb.ingress.kubernetes.io/load-balancer-name: pat-eks-dev-01
-    alb.ingress.kubernetes.io/group.name: pat-eks-dev-01-group
-    alb.ingress.kubernetes.io/scheme: internal
-    alb.ingress.kubernetes.io/subnets: subnet-0f1924af5ea95d5de, subnet-092f432699253df9c
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
-    alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8
-    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:901152784744:certificate/b386707e-5f69-41a4-b725-faaf7085af87
-    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
-    alb.ingress.kubernetes.io/target-type: instance
-    alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
-    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
-    alb.ingress.kubernetes.io/healthcheck-path: /health
-    alb.ingress.kubernetes.io/tags: Env=dev
-    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=1800
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:
-    - host:  api.dev.ai.umbrella.com
+  {{- range .Values.ingress.hosts }}
+    - host:  {{ .host}}
       http:
-        paths:
-          - path: /health-check
-            pathType: Prefix
+        paths: 
+        {{- range .paths }}
+          - path: {{ .path}}
+            pathType: {{ .pathType }}
             backend:
-              service:
-                name: ai-orchestrator-service
+              service: 
+                name: {{ .serviceName }}
                 port:
-                  number: 5000
-          - path: /health
-            pathType: Prefix
-            backend:
-              service:
-                name: ai-orchestrator-service
-                port:
-                  number: 5000
-          - path: /api/v2/execute
-            pathType: Prefix
-            backend:
-              service:
-                name: ai-orchestrator-service
-                port:
-                  number: 5000
+                  number: {{ .servicePort }}
+        {{- end }}
+  {{- end }}

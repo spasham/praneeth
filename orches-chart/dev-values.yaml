@@ -1,16 +1,32 @@
-# Default values for orches-chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-replicaCount: 2
+app:
+  replicaCount: 2
 
-image:
-  name: 727231120957.dkr.ecr.us-west-2.amazonaws.com/data-science/orchestrator:592be69
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
+  image:
+    name: 727231120957.dkr.ecr.us-west-2.amazonaws.com/data-science/orchestrator:592be69
+    pullPolicy: IfNotPresent
 
-# imagePullSecrets: []
-# nameOverride: ""
-# fullnameOverride: ""
+  ports:
+    containerPort: 5000
+    protocol: TCP
+
+  env:
+    - name: SSE_ENV
+      value: prod
+    - name: GUNICORN_WORKERS
+      value: "2"
+    - name: TOKEN_VALIDATION_ENABLED
+      value: "False"
+    - name: DD_AGENT_HOST
+      value: "datadog.datadog"
+    - name: DD_PROFILING_ENABLED
+      value: "True"
+    - name: DD_TRACE_ENABLED
+      value: "True"
+    - name: DD_LOGS_INJECTION
+      value: "True"
+    - name: DD_TRACE_SAMPLE_RATE
+      value: "1"
+
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -23,12 +39,6 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
-  podAnnotations: {}
-  podLabels: {}
-
-  podSecurityContext: {}
-  # fsGroup: 2000
-
 securityContext:
   # capabilities:
   #   drop:
@@ -40,29 +50,48 @@ securityContext:
 service:
   type: NodePort
   port: 5000
+  protocol: TCP
   targetPort: 5000
 
 ingress:
   enabled: false
   className: "alb"
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  annotations:
+    alb.ingress.kubernetes.io/load-balancer-name: pat-eks-dev-01
+    alb.ingress.kubernetes.io/group.name: pat-eks-dev-01-group
+    alb.ingress.kubernetes.io/scheme: internal
+    alb.ingress.kubernetes.io/subnets: subnet-0f1924af5ea95d5de, subnet-092f432699253df9c
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/8
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-west-2:901152784744:certificate/b386707e-5f69-41a4-b725-faaf7085af87
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/target-type: instance
+    alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/tags: Env=dev
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=1800
+
   hosts:
     - host: api.dev.ai.umbrella.com
       paths:
         - path: /health-check
           pathType: Prefix
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+          serviceName: ai-orchestrator-service
+          servicePort: 5000
+        - path: /health
+          serviceName: ai-orchestrator-service
+          servicePort: 5000
+        - path: /api/v2/execute
+          serviceName: ai-orchestrator-service
+          servicePort: 5000
+  # hosts:
+  #   host: api.dev.ai.umbrella.com
+  #   paths:
+  #     path: /health-check
+  #     pathType: Prefix
 
 resources: 
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
   limits:
     cpu: 3
     memory: 2500Mi
@@ -120,11 +149,10 @@ affinity: {}
 # Role configuration
 role:
   create: false
-  name: ""
+  name: ai-orchestrator-role
   rules:
-    - apiGroups: [""]
-      resources: ["pods"]
-      verbs: ["get", "list"]
+  
+    
 
 # # RoleBinding configuration
 roleBinding:
