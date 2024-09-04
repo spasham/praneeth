@@ -1,8 +1,9 @@
------values.yaml------
+-----dev-values.yaml------
 labels:
   environment: "development"
   app: "my-app"
 
+---prod-values.yaml------
 labels:
   environment: "production"
   app: "my-app"
