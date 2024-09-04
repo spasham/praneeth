@@ -1,0 +1,33 @@
+-----values.yaml------
+labels:
+  environment: "development"
+  app: "my-app"
+
+labels:
+  environment: "production"
+  app: "my-app"
+
+-----deployment.yaml----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    environment: {{ .Values.labels.environment }}
+    app: {{ .Values.labels.app }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      environment: {{ .Values.labels.environment }}
+      app: {{ .Values.labels.app }}
+  template:
+    metadata:
+      labels:
+        environment: {{ .Values.labels.environment }}
+        app: {{ .Values.labels.app }}
+    spec:
+      containers:
+        - name: my-container
+          image: my-image:{{ .Values.image.tag }}
+
